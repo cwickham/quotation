@@ -206,9 +206,9 @@ It returns a quoted expression.
 
 **Inside** an rlang quoting function (e.g. `expr()`, and dplyr's quoted arguments), you can unquote something with the `!!` operator.
 
-This quotes the expression `height`:
+This quotes the expression `mass`:
 ```{r}
-my_var <- expr(height)
+my_var <- expr(mass)
 ```
 
 This quotes the expression `my_var`:
@@ -241,7 +241,7 @@ expr(!!x + !!y)
 
 This didn't work:
 ```{r, error = TRUE}
-col <- height
+col <- mass
 arrange(starwars, col)
 ```
 
@@ -249,7 +249,7 @@ arrange(starwars, col)
 
 First we want to quote `height`, not evaluate it:
 ```{r}
-var <- expr(height)
+var <- expr(mass)
 ```
 
 Then we can unquote `var` when we pass it to `arrange()`:
@@ -289,13 +289,13 @@ arrange_desc <- function(.data, var){
   var <- expr(var)
   arrange(.data, desc(!!var))
 }
-arrange_desc(starwars, height)
+arrange_desc(starwars, mass)
 ```
 
 
 ```{r, eval = FALSE}
 debugonce(arrange_desc)
-arrange_desc(starwars, height)
+arrange_desc(starwars, mass)
 ```
 
 `expr(var)` returns the expression `var`, it gets quoted.  In rlang this is solved by using `enexpr()` instead.
@@ -308,7 +308,7 @@ arrange_desc <- function(.data, var){
   var <- enexpr(var)
   arrange(.data, desc(!!var))
 }
-arrange_desc(starwars, height)
+arrange_desc(starwars, mass)
 ```
 
 But it only accepts one argument...
@@ -327,7 +327,7 @@ arrange_desc2 <- function(.data, ...){
   vars_desc <- map(vars, function(var) expr(desc(!!var)))
   arrange(.data, !!!vars_desc)
 }
-arrange_desc2(starwars, height, mass)
+arrange_desc2(starwars, mass, height)
 ```
 
 ## Quosures

@@ -416,10 +416,10 @@ consistent)
 **Inside** an rlang quoting function (e.g. `expr()`, and dplyr’s quoted
 arguments), you can unquote something with the `!!` operator.
 
-This quotes the expression `height`:
+This quotes the expression `mass`:
 
 ``` r
-my_var <- expr(height)
+my_var <- expr(mass)
 ```
 
 This quotes the expression `my_var`:
@@ -436,7 +436,7 @@ This unquotes `my_var` before quoting the result:
 expr(!!my_var)
 ```
 
-    ## height
+    ## mass
 
 ## Practice
 
@@ -460,10 +460,10 @@ This didn’t
     work:
 
 ``` r
-col <- height
+col <- mass
 ```
 
-    ## Error in eval(expr, envir, enclos): object 'height' not found
+    ## Error in eval(expr, envir, enclos): object 'mass' not found
 
 ``` r
 arrange(starwars, col)
@@ -476,7 +476,7 @@ arrange(starwars, col)
 First we want to quote `height`, not evaluate it:
 
 ``` r
-var <- expr(height)
+var <- expr(mass)
 ```
 
 Then we can unquote `var` when we pass it to `arrange()`:
@@ -488,16 +488,16 @@ arrange(starwars, !!var)
     ## # A tibble: 87 x 13
     ##    name     height  mass hair_color skin_color eye_color birth_year gender
     ##    <chr>     <int> <dbl> <chr>      <chr>      <chr>          <dbl> <chr> 
-    ##  1 Yoda         66  17.0 white      green      brown         896    male  
-    ##  2 Ratts T…     79  15.0 none       grey, blue unknown        NA    male  
+    ##  1 Ratts T…     79  15.0 none       grey, blue unknown        NA    male  
+    ##  2 Yoda         66  17.0 white      green      brown         896    male  
     ##  3 Wicket …     88  20.0 brown      brown      brown           8.00 male  
-    ##  4 Dud Bolt     94  45.0 none       blue, grey yellow         NA    male  
-    ##  5 R2-D2        96  32.0 <NA>       white, bl… red            33.0  <NA>  
-    ##  6 R4-P17       96  NA   none       silver, r… red, blue      NA    female
-    ##  7 R5-D4        97  32.0 <NA>       white, red red            NA    <NA>  
-    ##  8 Sebulba     112  40.0 none       grey, red  orange         NA    male  
-    ##  9 Gasgano     122  NA   none       white, bl… black          NA    male  
-    ## 10 Watto       137  NA   black      blue, grey yellow         NA    male  
+    ##  4 R2-D2        96  32.0 <NA>       white, bl… red            33.0  <NA>  
+    ##  5 R5-D4        97  32.0 <NA>       white, red red            NA    <NA>  
+    ##  6 Sebulba     112  40.0 none       grey, red  orange         NA    male  
+    ##  7 Dud Bolt     94  45.0 none       blue, grey yellow         NA    male  
+    ##  8 Padmé A…    165  45.0 brown      light      brown          46.0  female
+    ##  9 Wat Tam…    193  48.0 none       green, gr… unknown        NA    male  
+    ## 10 Sly Moo…    178  48.0 none       pale       white          NA    female
     ## # ... with 77 more rows, and 5 more variables: homeworld <chr>,
     ## #   species <chr>, films <list>, vehicles <list>, starships <list>
 
@@ -508,18 +508,18 @@ arrange(starwars, desc(!!var))
 ```
 
     ## # A tibble: 87 x 13
-    ##    name    height  mass hair_color skin_color  eye_color birth_year gender
-    ##    <chr>    <int> <dbl> <chr>      <chr>       <chr>          <dbl> <chr> 
-    ##  1 Yarael…    264  NA   none       white       yellow          NA   male  
-    ##  2 Tarfful    234 136   brown      brown       blue            NA   male  
-    ##  3 Lama Su    229  88.0 none       grey        black           NA   male  
-    ##  4 Chewba…    228 112   brown      unknown     blue           200   male  
-    ##  5 Roos T…    224  82.0 none       grey        orange          NA   male  
-    ##  6 Grievo…    216 159   none       brown, whi… green, y…       NA   male  
-    ##  7 Taun We    213  NA   none       grey        black           NA   female
-    ##  8 Rugor …    206  NA   none       green       orange          NA   male  
-    ##  9 Tion M…    206  80.0 none       grey        black           NA   male  
-    ## 10 Darth …    202 136   none       white       yellow          41.9 male  
+    ##    name    height  mass hair_color  skin_color eye_color birth_year gender
+    ##    <chr>    <int> <dbl> <chr>       <chr>      <chr>          <dbl> <chr> 
+    ##  1 Jabba …    175  1358 <NA>        green-tan… orange         600   herma…
+    ##  2 Grievo…    216   159 none        brown, wh… green, y…       NA   male  
+    ##  3 IG-88      200   140 none        metal      red             15.0 none  
+    ##  4 Darth …    202   136 none        white      yellow          41.9 male  
+    ##  5 Tarfful    234   136 brown       brown      blue            NA   male  
+    ##  6 Owen L…    178   120 brown, grey light      blue            52.0 male  
+    ##  7 Bossk      190   113 none        green      red             53.0 male  
+    ##  8 Chewba…    228   112 brown       unknown    blue           200   male  
+    ##  9 Jek To…    180   110 brown       fair       blue            NA   male  
+    ## 10 Dexter…    198   102 none        brown      yellow          NA   male  
     ## # ... with 77 more rows, and 5 more variables: homeworld <chr>,
     ## #   species <chr>, films <list>, vehicles <list>, starships <list>
 
