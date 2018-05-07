@@ -1,0 +1,355 @@
+---
+title: Quotes, Quotation and Quasiquotation
+author: Charlotte Wickham
+date: May 8th 2018
+output: github_document
+---
+
+# The game plan
+
+Three examples:
+
+1. Using a dplyr function interactively
+2. Using a dplyr function with a saved variable
+3. Using a dplyr function inside a function
+
+```{r, message=FALSE}
+library(tidyverse)
+library(rlang)
+```
+
+Motivated by an [Exercise in Advanced R](https://adv-r.hadley.nz/quasiquotation.html#exercises-60)
+
+> Implement `arrange_desc()`, a variant of `dplyr::arrange()` that sorts in descending order by default.
+
+# 1. Using a dplyr function interactively
+
+## dplyr
+
+dplyr provides **data manipulation** verbs:
+  
+* `filter()`
+* `select()`
+* `arrange()`
+* `mutate()`
+* `summarise()`
+* `group_by()`
+
+## Star Wars
+
+```{r}
+starwars
+```
+
+## `arrange()`: Reorder rows in data
+
+First argument, `.data`, is a data frame or tibble,  
+other arguments, `...`, are columns to order by.  
+
+Reorder by `mass`:
+```{r}
+arrange(starwars, mass)
+```
+
+
+Reorder by `mass`, breaking ties with `height`:
+```{r}
+arrange(starwars, mass, height)
+```
+
+Reorder by decreasing `mass`:
+```{r}
+arrange(starwars, desc(mass))
+```
+
+## The alternative with `order()` and `[`
+
+```{r}
+starwars[order(starwars$mass, starwars$height), ]
+```
+
+## Why dplyr?
+
+* First argument is always a data frame / tibble, **amenable to piping**.
+* Other arguments are evaluated in the context of the data, **saves typing**.
+* Function names describe the action, **code is easier to read**.
+
+```{r}
+starwars %>%
+  filter(height < 160) %>%
+  select(name, height, mass) %>%
+  arrange(mass)
+```
+
+## Quoted versus evaluated arguments
+
+`order()` uses **standard evaluation**, its arguments are **evaluated**.  
+
+That is, we can run the argument alone, it works, and it is all `order()` needs to do its job: 
+```{r}
+starwars$mass
+```
+
+`arrange()` uses **non-standard evaluation**, some of its arguments are **quoted**.   We can't just run the argument value alone, it doesn't work:
+```{r, error = TRUE}
+mass
+```
+
+## Why does dplyr use quotation?
+
+dplyr uses quotation:
+
+  * to save you typing! 
+  * so dbplyr can translate to SQL
+
+When you work interactively, this is great!
+
+But, sometimes it causes problems...
+
+# 2. Using a dplyr function with a saved variable
+
+## Using `arrange()` with a saved variable
+
+```{r}
+arrange(starwars, desc(mass))
+```
+
+What if if the column to order by is stored in a variable?
+
+This doesn't work:
+```{r, error = TRUE}
+col <- mass
+arrange(starwars, col)
+```
+
+Neither does this:
+```{r, error = TRUE}
+col <- "mass"
+arrange(starwars, col)
+```
+
+## A similar problem with `$`
+
+`$` can be used to pull out a column from a data frame:
+```{r}
+starwars$mass
+```
+
+Even though you can't just ask for `mass`:
+```{r, error = TRUE}
+mass
+```
+
+So, `$` quotes its argument too.
+
+But, what if the column I want is stored in a string?
+```{r}
+col <- "mass"
+```
+
+This doesn't work:
+```{r, error = TRUE}
+starwars$col
+```
+
+What to do? Use a function that doesn't use quote its argument:
+```{r}
+starwars[, col]
+```
+
+This is an example where you don't want the function to quote what you give it.  The solution in this case is to use a different function, one that doesn't quote its arguments.
+
+The tidyverse implements a different solution: tidy evaluation.
+
+## Tidy evaluation
+
+An opinion on how **non-standard evaluation** should be implemented, and a set of tools for implementing it: the rlang package.
+
+The way non-standard evaluation _is_ (will be) implemented in the tidyverse.
+
+Two audiences:
+
+1. For users of the tidyverse: tidy evaluation provides a way to selectively evaluate things if needed
+
+2. For developers of tidy tools: tidy evaluation provides a framework for implementing your own non-standard evaluation tools, so your users get the benefits of #1.
+
+We'll focus on the first case. We need two pieces: a way to quote things, and a way to selectively unquote things.
+
+## #1: Quoting with rlang
+
+Quoting means: to capture the intent of the code, not the result of evaluating it.
+
+How do I capture the **intent** of this code:
+`x + y + z`
+
+If I just run it in R,
+```{r, error = TRUE}
+x + y + z
+```
+R tries to evaluate it, and I get an error, because some of the objects involved don't exist.
+
+I could put quotes around it, to capture it without evaluating it:
+```{r}
+"x + y + z"
+```
+But this doesn't convey that this is in fact R code.
+
+In rlang, one way is to use `expr()`:
+```{r}
+expr(x + y + z)
+```
+It returns a quoted expression.
+
+(Base R has tools for quoting too, but rlang's implementation is more consistent)
+
+## #2: Unquoting with `!!` (bang-bang)
+
+**Inside** an rlang quoting function (e.g. `expr()`, and dplyr's quoted arguments), you can unquote something with the `!!` operator.
+
+This quotes the expression `height`:
+```{r}
+my_var <- expr(height)
+```
+
+This quotes the expression `my_var`:
+```{r}
+expr(my_var)
+```
+
+This unquotes `my_var` before quoting the result:
+```{r}
+expr(!!my_var)
+```
+
+## Practice
+
+```{r}
+x <- expr(z)
+y <- expr(x + y)
+```
+
+Can you guess what expression each of these will return?
+
+```{r, results="hide"}
+expr(x + y)
+expr(!!x + y)
+expr(x + !!y)
+expr(!!x + !!y)
+```
+
+## Back to our problem
+
+This didn't work:
+```{r, error = TRUE}
+col <- height
+arrange(starwars, col)
+```
+
+## A Solution
+
+First we want to quote `height`, not evaluate it:
+```{r}
+var <- expr(height)
+```
+
+Then we can unquote `var` when we pass it to `arrange()`:
+```{r}
+arrange(starwars, !!var)
+```
+
+You can selectively unquote things, so to get reverse ordering:
+```{r}
+arrange(starwars, desc(!!var))
+```
+
+# 3. Using a dplyr function inside a function
+
+## Now, we might want to turn this into a function
+
+```{r}
+var <- expr(height)
+arrange(starwars, desc(!!var))
+```
+
+One attempt:
+```{r}
+arrange_desc <- function(.data, var){
+  arrange(.data, desc(!!var))
+}
+
+arrange_desc(starwars, expr(mass))
+```
+But it would be nicer if we could just say `arrange_desc(starwars, mass)`
+
+## Another attempt
+
+Why doesn't this work?
+```{r, error = TRUE}
+arrange_desc <- function(.data, var){
+  var <- expr(var)
+  arrange(.data, desc(!!var))
+}
+arrange_desc(starwars, height)
+```
+
+
+```{r, eval = FALSE}
+debugonce(arrange_desc)
+arrange_desc(starwars, height)
+```
+
+`expr(var)` returns the expression `var`, it gets quoted.  In rlang this is solved by using `enexpr()` instead.
+
+## Use `enexpr()` instead of `expr()` to capture arguments inside of functions
+
+And finally it works
+```{r}
+arrange_desc <- function(.data, var){
+  var <- enexpr(var)
+  arrange(.data, desc(!!var))
+}
+arrange_desc(starwars, height)
+```
+
+But it only accepts one argument...
+
+## A multiple argument version
+
+New things:
+
+* `exprs()` to capture multiple expressions in a list
+* `purrr::map()` to operate of the list of expressions
+* `!!!` to "splice" unquote: each element is inserted as an argument
+
+```{r}
+arrange_desc2 <- function(.data, ...){
+  vars <- enexprs(...)
+  vars_desc <- map(vars, function(var) expr(desc(!!var)))
+  arrange(.data, !!!vars_desc)
+}
+arrange_desc2(starwars, height, mass)
+```
+
+## Quosures
+
+In reality you'll see `quo()`, `enquo()`, `quos()` and `enquos()`, instead of `expr()`, `enexpr()`, `exprs()` and `enexprs()`.
+
+These capture both the code and the **environment**.
+
+# Resources 
+
+If dplyr is new to you, start by learning to use it interactively with the [Data Transformation chapter in R for Data Science](http://r4ds.had.co.nz/transform.html).
+
+If you have never written your own function before, start with [Functions in R for Data Science](http://r4ds.had.co.nz/functions.html) or [DataCamp's Writing Functions in R](https://www.datacamp.com/courses/writing-functions-in-r).
+
+If you've written functions but want to formalise your knowledge, [Functions in Advanced R](http://adv-r.had.co.nz/Functions.html).
+
+If you want to see how to program with dplyr functions, the [Programming with dplyr vignette](https://dplyr.tidyverse.org/articles/programming.html).
+
+If the vignette seems a little unapproachable, find another resource in [Mara Averick's roundup of tidy eval resources](https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/).
+
+If you'd prefer to watch than read, the [RStudio's tidy evaluation webinar](https://www.rstudio.com/resources/webinars/tidy-eval/), or [Hadley's tidy evaluation in 5 minutes](https://www.youtube.com/watch?v=nERXS3ssntw).
+
+If you are interested in the underpinnings, and possibly using tidy evaluation ideas in your own pacakges, look at [Metaprogramming in the **new** (in progress) edition of Advanced R](https://adv-r.hadley.nz/meta.html).
+
+
