@@ -30,7 +30,7 @@ We worked through three examples:
 
 See the [annotated output](three-examples-annotated.md) or [source](three-examples-annotated.Rmd), or motivating [slides](three-examples-slides.pdf).
 
-This meant I omitted the "Quotes" part of the talk, but you can find my notes [here](quotes.Rmd).
+This meant I omitted the "Quotes" part of the talk, but you can look at my [notes](quotes.md).
 
 ## Resources
 

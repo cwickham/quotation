@@ -1,0 +1,282 @@
+---
+title: Quotes
+author: Charlotte Wickham
+date: May 8th 2018
+output: github_document
+always_allow_html: yes
+---
+
+```{r setup, include = FALSE}
+library(printr)
+```
+
+
+```{r, message=FALSE}
+library(tidyverse)
+library(lobstr)
+library(rlang)
+```
+
+# Part I: Quotes
+
+When do you need to surround something in quote marks?
+
+## Quiz
+
+What's the difference between
+```{r, results="hide"}
+3
+```
+and 
+```{r, results="hide"}
+"3"
+```
+?
+
+*(For experienced users, how is this one different?)*
+```{r, eval = FALSE}
+`3`
+```
+
+## Quotes tell R something is a character string
+
+`"` and `'` are used in R to form character strings.  
+
+`3` is the number three,  
+`"3"` is the character string containing the digit 3.
+```{r}
+str(3)
+str("3")
+```
+
+## Backticks are for *non-syntatic* names
+
+Backticks `` ` `` are used for a object **name** (also known as symbol).  You don't need them unless the name is unusual and wouldn't usually be considered a valid R object name, e.g. it begins with a number, contains spaces, or other reserved characters.
+
+Here, we are asking for an object called `3`,
+```{r, error = TRUE}
+`3`
+```
+but one doesn't exist, so R returns an error.  If we really wanted to confuse ourselves, we could create an object with the name 3:
+
+```{r}
+`3` <- 4
+`3`
+```
+But, I wouldn't advise it.  More often, weird names occur as the result of inputting data where column names might involve spaces or special characters.
+
+```{r, eval = FALSE}
+?Quotes          # Read about ",' and `
+?make.names      # Read rules for names to be valid
+```
+
+## Quiz 
+
+```{r}
+c <- 2
+```
+
+In the code below: 
+
+* Which `c` is a *character string*?
+* Which `c` refers to a *the name of an object*?
+* Which `c` refers to a *function name*?
+* Which `c` refers to an *argument name*?
+  
+```{r, results="hide"}
+c(c = "c", c)
+```
+
+## Quiz: solutions
+
+The character string containing the letter `c`
+```
+c(c = "c", c)
+       ^
+       |
+```
+
+An object with the name `c`
+```
+c(c = "c", c)
+           ^
+           |
+```
+
+Function name
+```
+c(c = "c", c)
+^
+|
+```
+
+Argument name
+```
+c(c = "c", c)
+  ^
+  |
+```
+
+
+## You don't need quotes around function names or argument names
+
+Function names and argument names **very rarely** need quotes.  If you do put quotes around them, you probably won't get an error, but it's considered bad style.
+
+These all work, and give the same result:
+```{r, results="hide"}
+"mean"( x  =  c (1:5))
+"mean"("x" =  c (1:5))
+"mean"("x" = "c"(1:5))
+ mean ( x  = "c"(1:5))
+ mean ("x" = "c"(1:5))
+```
+
+But, you should write:
+```{r, results = "hide"}
+mean(x = c(1:5))
+```
+
+## Except...if you need a backtick `` ` ``
+
+The exception is function names or argument names that aren't considered valid R names, and you'll need backticks (`` ` ``).
+
+E.g. the function with the name `+`
+```{r}
+`+`(1, 2)
+```
+
+OK that leaves **argument values**... to quote or not to quote?
+
+## Strategy #0: Trial and `Error` + Practice
+
+Where most of us start!  
+
+The more you use a function the better you get at guessing/remembering what it is expecting.
+
+But, it helps to have strategies to remove the guessing.
+
+## Strategy #1: What are you referring to?
+
+| You are referring to:                                |            |
+|------------------------------------------------------|------------|
+| an **object** that exists in your workspace by name  | No quotes  |
+| a particular character **string**                    | Quotes     |
+
+```{r}
+n_times <- 10
+```
+
+I want to repeat the string "A", `n_times` times:
+```{r}
+rep(x = "A", times = n_times)
+```
+
+`A` is the **character string** I want to repeat, so it needs quotes, `n_times` is the **name of an object**, so it doesn't need quotes.  
+
+If I stored the string I wanted to repeat in `str_to_repeat`:
+```{r}
+string_to_repeat <- "A"
+```
+
+Now, my `x` argument is the **name of an object** so it doesn't need quotes:
+```{r}
+rep(x = string_to_repeat, times = n_times)
+```
+
+
+## Strategy #1: Your Turn
+
+```{r}
+books <- c("The Art of R Programming", "R for Data Science",
+  "Advanced R")
+R <- R.version.string
+```
+
+I want to see where the character string `R` occurs in the titles in my `books` variable.
+
+**Which code is correct?**
+
+```{r, eval = FALSE}
+str_view(string = "books", pattern = "R")
+str_view(string = "books", pattern =  R )
+str_view(string =  books,  pattern = "R")
+str_view(string =  books,  pattern =  R )
+```
+
+## Strategy #1: Your Turn Solution
+
+`books` is the name of an object, it doesn't need quotes, 
+`R` is a specific character string, it needs quotes, so the correct option is:
+```{r}
+str_view(string = books, pattern = "R")
+```
+(Caveat: this strategy may not work if the function **quotes** its arguments, more in Quotation)
+
+## Strategy #2: Read the documentation
+
+If the argument value is described as:
+
+* a character string, or string, use quotes,
+* an object, name, symbol, or expression don't use quotes
+
+## Strategy #2: Example
+
+The `pull()` function in dplyr extracts a column from a data frame.  
+
+If I want the `cyl` column from `mtcars`, do I want `pull(mtcars, cyl)` or `pull(mtcars, "cyl")`?
+
+```{r tidy=FALSE, printr.help.sections=c('arguments'), comment=''}
+?dplyr::pull
+```
+
+No quotes needed since this is a name.  Also, look at examples section and see:
+
+```{r}
+mtcars %>% pull(cyl)
+```
+
+(Aside, `pull(mtcars, "cyl")` works as well)
+
+When referring to an exsiting column inside a data frame, most (all?), tidyverse functions will not require quotes.  
+
+## Strategy #2: Your Turn
+
+The `gather()` function in tidyr takes multiple columns and collapses then into `key` and `value` columns.
+
+Do the values of the `key` and `value` arguments need quotes?
+
+```{r tidy=FALSE, printr.help.sections=c('arguments'), comment=''}
+?tidyr::gather
+```
+
+## Strategy #2: Your Turn Solution
+
+Do the values of the `key` and `value` arguments need quotes?
+
+"as strings" -> YES!
+```{r, results = "hide"}
+gather(table4a, -country, key = "year", value = "count")
+```
+
+"or symbols" -> NO!
+```{r, results = "hide"}
+gather(table4a, -country, key =  year , value =  count )
+```
+
+So, in this case it doesn't matter.
+
+## Strategy #3: `<-` Strategy #0
+
+Reading documentation isn't always enlightening:
+
+```{r eval = FALSE, tidy=FALSE, printr.help.sections=c('arguments'), comment=''}
+?purrr::pluck
+```
+For the `...` argument:
+
+> Can be an integer position, a string name, or an accessor function. 
+
+A "string name", is that the name of a string, or name as a string?
+
+Revert to strategy #0...
+
