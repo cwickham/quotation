@@ -586,14 +586,14 @@ arrange_desc <- function(.data, var){
   var <- expr(var)
   arrange(.data, desc(!!var))
 }
-arrange_desc(starwars, height)
+arrange_desc(starwars, mass)
 ```
 
     ## Error in arrange_impl(.data, dots): cannot arrange column of class 'name' at position 1
 
 ``` r
 debugonce(arrange_desc)
-arrange_desc(starwars, height)
+arrange_desc(starwars, mass)
 ```
 
 `expr(var)` returns the expression `var`, it gets quoted. In rlang this
@@ -609,22 +609,22 @@ arrange_desc <- function(.data, var){
   var <- enexpr(var)
   arrange(.data, desc(!!var))
 }
-arrange_desc(starwars, height)
+arrange_desc(starwars, mass)
 ```
 
     ## # A tibble: 87 x 13
-    ##    name    height  mass hair_color skin_color  eye_color birth_year gender
-    ##    <chr>    <int> <dbl> <chr>      <chr>       <chr>          <dbl> <chr> 
-    ##  1 Yarael…    264  NA   none       white       yellow          NA   male  
-    ##  2 Tarfful    234 136   brown      brown       blue            NA   male  
-    ##  3 Lama Su    229  88.0 none       grey        black           NA   male  
-    ##  4 Chewba…    228 112   brown      unknown     blue           200   male  
-    ##  5 Roos T…    224  82.0 none       grey        orange          NA   male  
-    ##  6 Grievo…    216 159   none       brown, whi… green, y…       NA   male  
-    ##  7 Taun We    213  NA   none       grey        black           NA   female
-    ##  8 Rugor …    206  NA   none       green       orange          NA   male  
-    ##  9 Tion M…    206  80.0 none       grey        black           NA   male  
-    ## 10 Darth …    202 136   none       white       yellow          41.9 male  
+    ##    name    height  mass hair_color  skin_color eye_color birth_year gender
+    ##    <chr>    <int> <dbl> <chr>       <chr>      <chr>          <dbl> <chr> 
+    ##  1 Jabba …    175  1358 <NA>        green-tan… orange         600   herma…
+    ##  2 Grievo…    216   159 none        brown, wh… green, y…       NA   male  
+    ##  3 IG-88      200   140 none        metal      red             15.0 none  
+    ##  4 Darth …    202   136 none        white      yellow          41.9 male  
+    ##  5 Tarfful    234   136 brown       brown      blue            NA   male  
+    ##  6 Owen L…    178   120 brown, grey light      blue            52.0 male  
+    ##  7 Bossk      190   113 none        green      red             53.0 male  
+    ##  8 Chewba…    228   112 brown       unknown    blue           200   male  
+    ##  9 Jek To…    180   110 brown       fair       blue            NA   male  
+    ## 10 Dexter…    198   102 none        brown      yellow          NA   male  
     ## # ... with 77 more rows, and 5 more variables: homeworld <chr>,
     ## #   species <chr>, films <list>, vehicles <list>, starships <list>
 
@@ -646,22 +646,22 @@ arrange_desc2 <- function(.data, ...){
   vars_desc <- map(vars, function(var) expr(desc(!!var)))
   arrange(.data, !!!vars_desc)
 }
-arrange_desc2(starwars, height, mass)
+arrange_desc2(starwars, mass, height)
 ```
 
     ## # A tibble: 87 x 13
-    ##    name    height  mass hair_color skin_color  eye_color birth_year gender
-    ##    <chr>    <int> <dbl> <chr>      <chr>       <chr>          <dbl> <chr> 
-    ##  1 Yarael…    264  NA   none       white       yellow          NA   male  
-    ##  2 Tarfful    234 136   brown      brown       blue            NA   male  
-    ##  3 Lama Su    229  88.0 none       grey        black           NA   male  
-    ##  4 Chewba…    228 112   brown      unknown     blue           200   male  
-    ##  5 Roos T…    224  82.0 none       grey        orange          NA   male  
-    ##  6 Grievo…    216 159   none       brown, whi… green, y…       NA   male  
-    ##  7 Taun We    213  NA   none       grey        black           NA   female
-    ##  8 Tion M…    206  80.0 none       grey        black           NA   male  
-    ##  9 Rugor …    206  NA   none       green       orange          NA   male  
-    ## 10 Darth …    202 136   none       white       yellow          41.9 male  
+    ##    name    height  mass hair_color  skin_color eye_color birth_year gender
+    ##    <chr>    <int> <dbl> <chr>       <chr>      <chr>          <dbl> <chr> 
+    ##  1 Jabba …    175  1358 <NA>        green-tan… orange         600   herma…
+    ##  2 Grievo…    216   159 none        brown, wh… green, y…       NA   male  
+    ##  3 IG-88      200   140 none        metal      red             15.0 none  
+    ##  4 Tarfful    234   136 brown       brown      blue            NA   male  
+    ##  5 Darth …    202   136 none        white      yellow          41.9 male  
+    ##  6 Owen L…    178   120 brown, grey light      blue            52.0 male  
+    ##  7 Bossk      190   113 none        green      red             53.0 male  
+    ##  8 Chewba…    228   112 brown       unknown    blue           200   male  
+    ##  9 Jek To…    180   110 brown       fair       blue            NA   male  
+    ## 10 Dexter…    198   102 none        brown      yellow          NA   male  
     ## # ... with 77 more rows, and 5 more variables: homeworld <chr>,
     ## #   species <chr>, films <list>, vehicles <list>, starships <list>
 
@@ -694,12 +694,12 @@ If the vignette seems a little unapproachable, find another resource in
 [Mara Averick’s roundup of tidy eval
 resources](https://maraaverick.rbind.io/2017/08/tidyeval-resource-roundup/).
 
-If you’d prefer to watch than read, the [RStudio’s tidy evaluation
+If you’d prefer to watch than read, try [RStudio’s tidy evaluation
 webinar](https://www.rstudio.com/resources/webinars/tidy-eval/), or
 [Hadley’s tidy evaluation in 5
 minutes](https://www.youtube.com/watch?v=nERXS3ssntw).
 
 If you are interested in the underpinnings, and possibly using tidy
-evaluation ideas in your own pacakges, look at [Metaprogramming in the
+evaluation ideas in your own packages, look at [Metaprogramming in the
 **new** (in progress) edition of Advanced
 R](https://adv-r.hadley.nz/meta.html).

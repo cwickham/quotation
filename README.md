@@ -46,7 +46,7 @@ If the vignette seems a little unapproachable, find another resource in [Mara Av
 
 If you'd prefer to watch than read, the [RStudio's tidy evaluation webinar](https://www.rstudio.com/resources/webinars/tidy-eval/), or [Hadley's tidy evaluation in 5 minutes](https://www.youtube.com/watch?v=nERXS3ssntw).
 
-If you are interested in the underpinnings, and possibly using tidy evaluation ideas in your own pacakges, look at [Metaprogramming in the **new** (in progress) edition of Advanced R](https://adv-r.hadley.nz/meta.html).
+If you are interested in the underpinnings, and possibly using tidy evaluation ideas in your own packages, look at [Metaprogramming in the **new** (in progress) edition of Advanced R](https://adv-r.hadley.nz/meta.html).
 
 ## License
 
